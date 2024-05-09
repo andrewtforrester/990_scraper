@@ -1,7 +1,7 @@
 import pytesseract
 from PIL import Image
 
-im = Image.open('test.png')
+im = Image.open('test pngs/sc1.png')
 img_string = pytesseract.image_to_string(im).split("\n")
 
 # for s in img_string:
