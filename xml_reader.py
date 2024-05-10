@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
+import csv
 
-tree = ET.parse('xml/safechild 990_FY2021.xml')
+tree = ET.parse('xml/ffa_2022 990.xml')
 root = tree.getroot()
 
 def find_element(xml_root, target_tag):
@@ -9,11 +10,28 @@ def find_element(xml_root, target_tag):
         target = target.find("{http://www.irs.gov/efile}" + level)
     return target.text
 
-data = {}
+cdata = {}
 
-data["EIN"] = find_element(root, ["ReturnHeader", "Filer", "EIN"])
-data["Address"] = find_element(root, ["ReturnHeader", "Filer", "USAddress", "AddressLine1Txt"]) + ", " + find_element(root, ["ReturnHeader", "Filer", "USAddress", "CityNm"]) + " " + find_element(root, ["ReturnHeader", "Filer", "USAddress", "StateAbbreviationCd"]) + " " + find_element(root, ["ReturnHeader", "Filer", "USAddress", "ZIPCd"])
-data["Mission Statement"] = find_element(root, ["ReturnData", "IRS990", "ActivityOrMissionDesc"])
+cdata["EIN"] = find_element(root, ["ReturnHeader", "Filer", "EIN"])
+cdata["Address"] = find_element(root, ["ReturnHeader", "Filer", "USAddress", "AddressLine1Txt"]).title() + ", " + find_element(root, ["ReturnHeader", "Filer", "USAddress", "CityNm"]).title() + " " + find_element(root, ["ReturnHeader", "Filer", "USAddress", "StateAbbreviationCd"]) + " " + find_element(root, ["ReturnHeader", "Filer", "USAddress", "ZIPCd"])
+cdata["Mission Statement"] = find_element(root, ["ReturnData", "IRS990", "ActivityOrMissionDesc"]).lower().capitalize()
 
-for line in data:
-    print(line + ": " + data[line])
+cdata["Current Year Revenue"] = find_element(root, ["ReturnData", "IRS990", "CYTotalRevenueAmt"])
+cdata["Current Year Expenses"] = find_element(root, ["ReturnData", "IRS990", "CYTotalExpensesAmt"])
+
+cdata["EOY Assets"] = find_element(root, ["ReturnData", "IRS990", "TotalAssetsEOYAmt"])
+cdata["EOY Liabilities"] = find_element(root, ["ReturnData", "IRS990", "TotalLiabilitiesEOYAmt"])
+cdata["EOY Net Assets"] = find_element(root, ["ReturnData", "IRS990", "NetAssetsOrFundBalancesEOYAmt"])
+
+for line in cdata:
+    print(line + ": " + cdata[line])
+
+filename = "sample_output.csv"
+
+with open(filename, 'w', newline='') as csvfile:
+	# creating a csv dict writer object
+    writer = csv.writer(csvfile, delimiter=",")
+    
+
+    writer.writerow([item for item in cdata])
+    writer.writerow([cdata[item] for item in cdata])
